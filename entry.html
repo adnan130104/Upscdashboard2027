@@ -529,7 +529,245 @@ document.getElementById("optionalSubject").value;
     console.log(entry);
 
 }
+</script>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+  addDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDZ3NR4uIX68j7sUlYJXrgnPG8YqAds8qQ",
+  authDomain: "upscdashboard2027.firebaseapp.com",
+  projectId: "upscdashboard2027",
+  storageBucket: "upscdashboard2027.firebasestorage.app",
+  messagingSenderId: "339505380172",
+  appId: "1:339505380172:web:2ece54c068448582846de9",
+  measurementId: "G-6Y2GHER152"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Auto set today's date
+document.getElementById("entryDate").value =
+new Date().toISOString().split("T")[0];
+
+function fillHours(id){
+    let select=document.getElementById(id);
+    for(let i=0;i<=12;i++){
+        let option=document.createElement("option");
+        option.value=i;
+        option.text=i+" Hr";
+        select.appendChild(option);
+    }
+}
+
+function fillMinutes(id){
+    let select=document.getElementById(id);
+    [0,15,30,45].forEach(function(min){
+        let option=document.createElement("option");
+        option.value=min;
+        option.text=min+" Min";
+        select.appendChild(option);
+    });
+}
+
+[
+"optionalH",
+"mainsH",
+"gsH",
+"caH",
+"writingH"
+].forEach(fillHours);
+
+[
+"optionalM",
+"mainsM",
+"gsM",
+"caM",
+"writingM"
+].forEach(fillMinutes);
+
+function toggleDayType(){
+
+    let type=
+    document.getElementById("dayType").value;
+
+    document.getElementById("studySection")
+    .classList.add("hidden");
+
+    document.getElementById("breakSection")
+    .classList.add("hidden");
+
+    if(type==="Study Day"){
+        document.getElementById("studySection")
+        .classList.remove("hidden");
+    }
+
+    if(type==="Break Day"){
+        document.getElementById("breakSection")
+        .classList.remove("hidden");
+    }
+}
+
+function toggleTest(){
+
+    let value=
+    document.getElementById("testAttempted").value;
+
+    if(value==="Yes"){
+        document.getElementById("testSection")
+        .classList.remove("hidden");
+    }else{
+        document.getElementById("testSection")
+        .classList.add("hidden");
+    }
+}
+
+function getTime(hoursId,minutesId){
+
+    let h=
+    parseInt(
+    document.getElementById(hoursId).value
+    ) || 0;
+
+    let m=
+    parseInt(
+    document.getElementById(minutesId).value
+    ) || 0;
+
+    return h+(m/60);
+}
+
+async function saveEntry(){
+
+    let dayType=
+    document.getElementById("dayType").value;
+
+    if(dayType===""){
+        alert("Please select Day Type");
+        return;
+    }
+
+    let entry={
+        date:
+        document.getElementById("entryDate").value,
+        dayType:dayType
+    };
+
+    if(dayType==="Study Day"){
+
+        entry.gsSubject =
+        document.getElementById("gsSubject").value;
+
+        entry.mainsSubject =
+        document.getElementById("mainsSubject").value;
+
+        entry.optionalSubject =
+        document.getElementById("optionalSubject").value;
+
+        entry.optionalHours=
+        getTime("optionalH","optionalM");
+
+        entry.mainsHours=
+        getTime("mainsH","mainsM");
+
+        entry.gsHours=
+        getTime("gsH","gsM");
+
+        entry.caHours=
+        getTime("caH","caM");
+
+        entry.writingHours=
+        getTime("writingH","writingM");
+
+        entry.mcqs=
+        Number(
+        document.getElementById("mcqs").value
+        ) || 0;
+
+        entry.gsAnswers=
+        Number(
+        document.getElementById("gsAnswers").value
+        ) || 0;
+
+        entry.optionalAnswers=
+        Number(
+        document.getElementById("optionalAnswers").value
+        ) || 0;
+
+        entry.testAttempted=
+        document.getElementById("testAttempted").value;
+
+        if(entry.testAttempted==="Yes"){
+
+            entry.testType=
+            document.getElementById("testType").value;
+
+            entry.testName=
+            document.getElementById("testName").value;
+
+            entry.testQuestions=
+            Number(
+            document.getElementById("testQuestions").value
+            ) || 0;
+
+            if(entry.testType==="Prelims Test"){
+                entry.mcqs =
+                entry.mcqs +
+                entry.testQuestions;
+            }
+
+            if(entry.testType==="GS Test"){
+                entry.gsAnswers =
+                entry.gsAnswers +
+                entry.testQuestions;
+            }
+
+            if(entry.testType==="Optional Test"){
+                entry.optionalAnswers =
+                entry.optionalAnswers +
+                entry.testQuestions;
+            }
+        }
+    }
+
+    if(dayType==="Break Day"){
+        entry.breakReason=
+        document.getElementById("breakReason").value;
+    }
+
+    try{
+
+        await addDoc(
+        collection(db,"upscEntries"),
+        entry
+        );
+
+        document.getElementById("message").innerHTML=
+        "Entry Saved To Firebase ✅";
+
+    }
+    catch(error){
+
+        console.error(error);
+
+        document.getElementById("message").innerHTML=
+        "Firebase Save Failed ❌";
+
+    }
+}
+
+window.saveEntry = saveEntry;
+window.toggleDayType = toggleDayType;
+window.toggleTest = toggleTest;
 
 </script>
+
 </body>
 </html>
