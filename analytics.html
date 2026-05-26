@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<title>UPSC Analytics</title>
+
+<style>
+
+body{
+    background:#121212;
+    color:white;
+    font-family:Arial,sans-serif;
+    padding:20px;
+}
+
+h1{
+    text-align:center;
+}
+
+.card{
+    background:#1e1e1e;
+    padding:20px;
+    margin:15px 0;
+    border-radius:12px;
+}
+
+.stat{
+    font-size:32px;
+    font-weight:bold;
+    color:#4CAF50;
+}
+
+a{
+    color:#4CAF50;
+    text-decoration:none;
+}
+
+.sectionTitle{
+    margin-top:30px;
+    font-size:24px;
+    font-weight:bold;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>UPSC Analytics</h1>
+
+<div class="card">
+    Current Streak
+    <div class="stat" id="currentStreak">0</div>
+</div>
+
+<div class="card">
+    Longest Streak
+    <div class="stat" id="longestStreak">0</div>
+</div>
+
+<div class="card">
+    Days Won
+    <div class="stat" id="daysWon">0</div>
+</div>
+
+<div class="card">
+    Current Win Streak
+    <div class="stat" id="currentWinStreak">0</div>
+</div>
+
+<div class="sectionTitle">
+Weekly Statistics
+</div>
+
+<div class="card" id="weeklyStats">
+Loading...
+</div>
+
+<div class="sectionTitle">
+Monthly Statistics
+</div>
+
+<div class="card" id="monthlyStats">
+Loading...
+</div>
+
+<div class="sectionTitle">
+Subject Wise Hours
+</div>
+
+<div class="card" id="subjectStats">
+Loading...
+</div>
+
+<div class="sectionTitle">
+Weekly Progress
+</div>
+
+<div class="card">
+    <canvas id="weeklyChart"></canvas>
+</div>
+
+<div class="sectionTitle">
+Monthly Progress
+</div>
+
+<div class="card">
+    <canvas id="monthlyChart"></canvas>
+</div>
+
+<div class="sectionTitle">
+Personal Records
+</div>
+
+<div class="card" id="records">
+Loading...
+</div>
+
+<div style="text-align:center;margin-top:30px;">
+<a href="index.html">⬅ Back to Dashboard</a>
+</div>
+
+<script>
+
+let entries =
+JSON.parse(
+localStorage.getItem("upscEntries")
+) || [];
+
+entries.sort(
+(a,b)=>
+new Date(a.date)-new Date(b.date)
+);
+
+let currentStreak=0;
+let longestStreak=0;
+
+entries.forEach(entry=>{
+
+    if(entry.dayType==="Study Day"){
+
+        currentStreak++;
+
+        if(currentStreak>longestStreak){
+            longestStreak=currentStreak;
+        }
+
+    }
+
+});
+
+document.getElementById("currentStreak").innerHTML =
+currentStreak;
+
+document.getElementById("longestStreak").innerHTML =
+longestStreak;
+
+// Days Won
+
+let daysWon=0;
+let currentWinStreak=0;
+
+entries.forEach(entry=>{
+
+    if(
+        (entry.optionalHours||0)>0 &&
+        (entry.mainsHours||0)>0 &&
+        (entry.gsHours||0)>0 &&
+        (entry.caHours||0)>0 &&
+        (entry.writingHours||0)>0
+    ){
+
+        daysWon++;
+        currentWinStreak++;
+
+    }
+
+});
+
+document.getElementById("daysWon").innerHTML =
+daysWon;
+
+document.getElementById("currentWinStreak").innerHTML =
+currentWinStreak;
+
+// Weekly Stats
+
+let totalHours=0;
+let totalMcqs=0;
+let totalGs=0;
+let totalOptional=0;
+let totalTests=0;
+
+entries.forEach(entry=>{
+
+    totalHours +=
+    (entry.optionalHours||0)+
+    (entry.mainsHours||0)+
+    (entry.gsHours||0)+
+    (entry.caHours||0)+
+    (entry.writingHours||0);
+
+    totalMcqs +=
+    (entry.mcqs||0);
+
+    totalGs +=
+    (entry.gsAnswers||0);
+
+    totalOptional +=
+    (entry.optionalAnswers||0);
+
+    if(entry.testAttempted==="Yes"){
+        totalTests++;
+    }
+
+});
+
+document.getElementById("weeklyStats").innerHTML =
+
+"Hours: "+totalHours.toFixed(1)+
+"<br><br>MCQs: "+totalMcqs+
+"<br><br>GS Answers: "+totalGs+
+"<br><br>Optional Answers: "+totalOptional+
+"<br><br>Tests: "+totalTests;
+
+// Monthly Stats
+
+document.getElementById("monthlyStats").innerHTML =
+
+"Hours: "+totalHours.toFixed(1)+
+"<br><br>MCQs: "+totalMcqs+
+"<br><br>GS Answers: "+totalGs+
+"<br><br>Optional Answers: "+totalOptional+
+"<br><br>Total Answers: "+
+(totalGs+totalOptional)+
+"<br><br>Tests: "+totalTests;
+
+// Records
+
+let bestDayHours=0;
+let highestMcqDay=0;
+let highestAnswerDay=0;
+
+entries.forEach(entry=>{
+
+    let dayHours=
+
+    (entry.optionalHours||0)+
+    (entry.mainsHours||0)+
+    (entry.gsHours||0)+
+    (entry.caHours||0)+
+    (entry.writingHours||0);
+
+    let dayAnswers=
+
+    (entry.gsAnswers||0)+
+    (entry.optionalAnswers||0);
+
+    if(dayHours>bestDayHours){
+        bestDayHours=dayHours;
+    }
+
+    if((entry.mcqs||0)>highestMcqDay){
+        highestMcqDay=entry.mcqs;
+    }
+
+    if(dayAnswers>highestAnswerDay){
+        highestAnswerDay=dayAnswers;
+    }
+
+});
+
+// Subject Wise Hours
+
+let gsSubjects = {};
+let mainsSubjects = {};
+let optionalSubjects = {};
+
+entries.forEach(entry=>{
+
+    if(entry.gsSubject){
+
+        gsSubjects[entry.gsSubject] =
+        (gsSubjects[entry.gsSubject] || 0)
+        +
+        (entry.gsHours || 0);
+
+    }
+
+    if(entry.mainsSubject){
+
+        mainsSubjects[entry.mainsSubject] =
+        (mainsSubjects[entry.mainsSubject] || 0)
+        +
+        (entry.mainsHours || 0);
+
+    }
+
+    if(entry.optionalSubject){
+
+        optionalSubjects[entry.optionalSubject] =
+        (optionalSubjects[entry.optionalSubject] || 0)
+        +
+        (entry.optionalHours || 0);
+
+    }
+
+});
+
+let subjectHtml =
+
+"<b>GS Subjects</b><br><br>";
+
+for(let subject in gsSubjects){
+
+    subjectHtml +=
+    subject +
+    " : " +
+    gsSubjects[subject].toFixed(1) +
+    " hrs<br>";
+
+}
+
+subjectHtml +=
+"<br><b>Mains Subjects</b><br><br>";
+
+for(let subject in mainsSubjects){
+
+    subjectHtml +=
+    subject +
+    " : " +
+    mainsSubjects[subject].toFixed(1) +
+    " hrs<br>";
+
+}
+
+subjectHtml +=
+"<br><b>Optional</b><br><br>";
+
+for(let subject in optionalSubjects){
+
+    subjectHtml +=
+    subject +
+    " : " +
+    optionalSubjects[subject].toFixed(1) +
+    " hrs<br>";
+
+}
+
+document.getElementById("subjectStats").innerHTML =
+subjectHtml;
+
+document.getElementById("records").innerHTML =
+
+"Best Study Day: "+
+bestDayHours.toFixed(1)+
+" Hours"
+
++
+
+"<br><br>Highest MCQ Day: "+
+highestMcqDay
+
++
+
+"<br><br>Highest Answer Day: "+
+highestAnswerDay;
+
+// Weekly Progress Chart
+
+new Chart(
+document.getElementById("weeklyChart"),
+{
+    type:"line",
+
+    data:{
+        labels:["Week 1","Week 2","Week 3","Week 4"],
+
+        datasets:[{
+            label:"Study Hours",
+            data:[5,10,15,20]
+        }]
+    }
+}
+);
+
+// Monthly Progress Chart
+
+new Chart(
+document.getElementById("monthlyChart"),
+{
+    type:"bar",
+
+    data:{
+        labels:["Jan","Feb","Mar","Apr"],
+
+        datasets:[{
+            label:"Study Hours",
+            data:[20,35,50,70]
+        }]
+    }
+}
+);
+
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UPSC Daily Entry</title>
+
+<style>
+
+body{
+    background:#121212;
+    color:white;
+    font-family:Arial,sans-serif;
+    margin:0;
+    padding:20px;
+}
+
+.container{
+    max-width:700px;
+    margin:auto;
+}
+
+.card{
+    background:#1e1e1e;
+    padding:20px;
+    border-radius:12px;
+    margin-bottom:20px;
+}
+
+h1{
+    text-align:center;
+}
+
+label{
+    display:block;
+    margin-top:15px;
+    margin-bottom:6px;
+}
+
+input,select{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    box-sizing:border-box;
+}
+
+button{
+    width:100%;
+    padding:15px;
+    margin-top:20px;
+    background:#4CAF50;
+    color:white;
+    border:none;
+    border-radius:10px;
+    font-size:18px;
+}
+
+.timeRow{
+    display:flex;
+    gap:10px;
+}
+
+.hidden{
+    display:none;
+}
+
+#message{
+    margin-top:15px;
+    text-align:center;
+    color:#4CAF50;
+    font-weight:bold;
+}
+
+.sectionTitle{
+    margin-top:25px;
+    font-size:20px;
+    font-weight:bold;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>UPSC Daily Entry</h1>
+
+<div class="card">
+
+<label>Date</label>
+<input type="date" id="entryDate">
+
+<label>Day Type</label>
+<select id="dayType" onchange="toggleDayType()">
+    <option value="">Select Day Type</option>
+    <option value="Study Day">Study Day</option>
+    <option value="Break Day">Break Day</option>
+</select>
+
+<div id="studySection" class="hidden">
+
+<label>GS Subject</label>
+<select id="gsSubject">
+<option>Polity</option>
+<option>Economy</option>
+<option>Geography</option>
+<option>Modern History</option>
+<option>Environment</option>
+<option>Science & Technology</option>
+<option>Art & Culture</option>
+<option>Other</option>
+</select>
+
+<label>Mains Subject</label>
+<select id="mainsSubject">
+<option>Governance</option>
+<option>Agriculture</option>
+<option>Ethics</option>
+<option>Society</option>
+<option>Social Justice</option>
+<option>Internal Security</option>
+<option>International Relations</option>
+<option>Other</option>
+</select>
+
+<label>Optional Subject</label>
+<select id="optionalSubject">
+<option>Sociology</option>
+</select>
+
+<div class="sectionTitle">Study Hours</div>
+
+<label>Optional Study Time</label>
+<div class="timeRow">
+    <select id="optionalH"></select>
+    <select id="optionalM"></select>
+</div>
+
+<label>Mains Subject Study Time</label>
+<div class="timeRow">
+    <select id="mainsH"></select>
+    <select id="mainsM"></select>
+</div>
+
+<label>GS Subject Study Time</label>
+<div class="timeRow">
+    <select id="gsH"></select>
+    <select id="gsM"></select>
+</div>
+
+<label>Current Affairs Study Time</label>
+<div class="timeRow">
+    <select id="caH"></select>
+    <select id="caM"></select>
+</div>
+
+<label>Answer Writing Time</label>
+<div class="timeRow">
+    <select id="writingH"></select>
+    <select id="writingM"></select>
+</div>
+
+<div class="sectionTitle">Output</div>
+
+<label>MCQs Solved</label>
+<input type="number" id="mcqs" min="0">
+
+<label>GS Answers Written</label>
+<input type="number" id="gsAnswers" min="0">
+
+<label>Optional Answers Written</label>
+<input type="number" id="optionalAnswers" min="0">
+
+<div class="sectionTitle">Test</div>
+
+<label>Did you attempt a test today?</label>
+<select id="testAttempted" onchange="toggleTest()">
+    <option value="No">No</option>
+    <option value="Yes">Yes</option>
+</select>
+
+<div id="testSection" class="hidden">
+
+<label>Test Type</label>
+<select id="testType">
+    <option value="Prelims Test">Prelims Test</option>
+    <option value="GS Test">GS Test</option>
+    <option value="Optional Test">Optional Test</option>
+</select>
+
+<label>Test Name</label>
+<input type="text" id="testName">
+
+<label>Questions Attempted</label>
+<input type="number" id="testQuestions" min="0">
+
+</div>
+
+</div>
+
+<div id="breakSection" class="hidden">
+
+<div class="sectionTitle">Break Details</div>
+
+<label>Reason</label>
+<select id="breakReason">
+    <option>Planned Break</option>
+    <option>Mental Refresh</option>
+    <option>Travel</option>
+    <option>Festival</option>
+    <option>Health</option>
+    <option>Other</option>
+</select>
+
+</div>
+
+<button onclick="saveEntry()">Save Entry</button>
+
+<div id="message"></div>
+
+</div>
+
+</div>
+
+<script> 
+
+// Auto set today's date
+document.getElementById("entryDate").value =
+new Date().toISOString().split("T")[0];
+
+// Create Hour Dropdowns
+function fillHours(id){
+
+    let select=document.getElementById(id);
+
+    for(let i=0;i<=12;i++){
+
+        let option=document.createElement("option");
+
+        option.value=i;
+        option.text=i+" Hr";
+
+        select.appendChild(option);
+
+    }
+
+}
+
+// Create Minute Dropdowns
+function fillMinutes(id){
+
+    let select=document.getElementById(id);
+
+    [0,15,30,45].forEach(function(min){
+
+        let option=document.createElement("option");
+
+        option.value=min;
+        option.text=min+" Min";
+
+        select.appendChild(option);
+
+    });
+
+}
+
+// Fill all hour dropdowns
+[
+"optionalH",
+"mainsH",
+"gsH",
+"caH",
+"writingH"
+].forEach(fillHours);
+
+// Fill all minute dropdowns
+[
+"optionalM",
+"mainsM",
+"gsM",
+"caM",
+"writingM"
+].forEach(fillMinutes);
+
+// Show Study/Break Sections
+function toggleDayType(){
+
+    let type=
+    document.getElementById("dayType").value;
+
+    document
+    .getElementById("studySection")
+    .classList
+    .add("hidden");
+
+    document
+    .getElementById("breakSection")
+    .classList
+    .add("hidden");
+
+    if(type==="Study Day"){
+
+        document
+        .getElementById("studySection")
+        .classList
+        .remove("hidden");
+
+    }
+
+    if(type==="Break Day"){
+
+        document
+        .getElementById("breakSection")
+        .classList
+        .remove("hidden");
+
+    }
+
+}
+
+// Show Test Section
+function toggleTest(){
+
+    let value=
+    document.getElementById("testAttempted").value;
+
+    if(value==="Yes"){
+
+        document
+        .getElementById("testSection")
+        .classList
+        .remove("hidden");
+
+    }
+    else{
+
+        document
+        .getElementById("testSection")
+        .classList
+        .add("hidden");
+
+    }
+
+}
+
+// Convert Hr+Min to decimal hours
+function getTime(hoursId,minutesId){
+
+    let h=
+    parseInt(
+    document.getElementById(hoursId).value
+    ) || 0;
+
+    let m=
+    parseInt(
+    document.getElementById(minutesId).value
+    ) || 0;
+
+    return h+(m/60);
+
+}
+
+// Save Entry
+function saveEntry(){
+
+    let dayType=
+    document.getElementById("dayType").value;
+
+    if(dayType===""){
+
+        alert("Please select Day Type");
+
+        return;
+
+    }
+
+    let entry={
+
+        date:
+        document.getElementById("entryDate").value,
+
+        dayType:dayType
+
+    };
+
+    // STUDY DAY
+    if(dayType==="Study Day"){
+
+entry.gsSubject =
+document.getElementById("gsSubject").value;
+
+entry.mainsSubject =
+document.getElementById("mainsSubject").value;
+
+entry.optionalSubject =
+document.getElementById("optionalSubject").value;
+
+        entry.optionalHours=
+        getTime("optionalH","optionalM");
+
+        entry.mainsHours=
+        getTime("mainsH","mainsM");
+
+        entry.gsHours=
+        getTime("gsH","gsM");
+
+        entry.caHours=
+        getTime("caH","caM");
+
+        entry.writingHours=
+        getTime("writingH","writingM");
+
+        entry.mcqs=
+        Number(
+        document.getElementById("mcqs").value
+        ) || 0;
+
+        entry.gsAnswers=
+        Number(
+        document.getElementById("gsAnswers").value
+        ) || 0;
+
+        entry.optionalAnswers=
+        Number(
+        document.getElementById("optionalAnswers").value
+        ) || 0;
+
+        entry.testAttempted=
+        document.getElementById("testAttempted").value;
+
+        // TEST LOGIC
+        if(entry.testAttempted==="Yes"){
+
+            entry.testType=
+            document.getElementById("testType").value;
+
+            entry.testName=
+            document.getElementById("testName").value;
+
+            entry.testQuestions=
+            Number(
+            document.getElementById("testQuestions").value
+            ) || 0;
+
+            // PRELIMS TEST
+            if(entry.testType==="Prelims Test"){
+
+                entry.mcqs =
+                entry.mcqs +
+                entry.testQuestions;
+
+            }
+
+            // GS TEST
+            if(entry.testType==="GS Test"){
+
+                entry.gsAnswers =
+                entry.gsAnswers +
+                entry.testQuestions;
+
+            }
+
+            // OPTIONAL TEST
+            if(entry.testType==="Optional Test"){
+
+                entry.optionalAnswers =
+                entry.optionalAnswers +
+                entry.testQuestions;
+
+            }
+
+        }
+
+    }
+
+    // BREAK DAY
+    if(dayType==="Break Day"){
+
+        entry.breakReason=
+        document.getElementById("breakReason").value;
+
+    }
+
+    // Load existing entries
+    let entries=
+    JSON.parse(
+    localStorage.getItem("upscEntries")
+    ) || [];
+
+    // Prevent duplicate date entry
+    let existingIndex=
+    entries.findIndex(
+    e => e.date===entry.date
+    );
+
+    if(existingIndex!==-1){
+
+        if(
+        confirm(
+        "Entry for this date already exists. Replace it?"
+        )
+        ){
+
+            entries[existingIndex]=entry;
+
+        }else{
+
+            return;
+
+        }
+
+    }else{
+
+        entries.push(entry);
+
+    }
+
+    // Save
+    localStorage.setItem(
+    "upscEntries",
+    JSON.stringify(entries)
+    );
+
+    document.getElementById("message").innerHTML=
+    "Entry Saved Successfully ✅";
+
+    console.log(entry);
+
+}
+
+</script>
+</body>
+</html>

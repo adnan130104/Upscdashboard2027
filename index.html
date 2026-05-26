@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>UPSC 2027 Command Center</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+
+    background:#0f172a;
+
+    color:white;
+
+    font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+
+    padding:20px;
+
+}
+
+.header{
+
+    background:#111827;
+
+    border-radius:20px;
+
+    padding:25px;
+
+    margin-bottom:25px;
+
+    box-shadow:0 10px 30px rgba(0,0,0,.25);
+
+}
+
+.header h1{
+
+    font-size:34px;
+
+    margin-bottom:8px;
+
+}
+
+.header p{
+
+    color:#94a3b8;
+
+    margin-bottom:20px;
+
+}
+
+.button{
+
+    display:inline-block;
+
+    background:#22c55e;
+
+    color:white;
+
+    text-decoration:none;
+
+    padding:12px 18px;
+
+    border-radius:12px;
+
+    margin-right:10px;
+
+    font-weight:bold;
+
+}
+
+.button:hover{
+
+    opacity:.9;
+
+}
+
+.grid{
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(auto-fit,minmax(220px,1fr));
+
+    gap:18px;
+
+}
+
+.card{
+
+    background:#1e293b;
+
+    border-radius:18px;
+
+    padding:20px;
+
+    box-shadow:
+    0 8px 25px rgba(0,0,0,.25);
+
+}
+
+.cardTitle{
+
+    color:#94a3b8;
+
+    font-size:14px;
+
+    margin-bottom:12px;
+
+}
+
+.number{
+
+    font-size:42px;
+
+    font-weight:bold;
+
+    color:#4ade80;
+
+}
+
+.footerCard{
+
+    margin-top:25px;
+
+    background:#111827;
+
+    border-radius:20px;
+
+    padding:25px;
+
+    text-align:center;
+
+}
+
+.footerCard h2{
+
+    color:#4ade80;
+
+    margin-bottom:10px;
+
+}
+
+.quote{
+
+    color:#cbd5e1;
+
+    font-size:18px;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+
+<h1>🎯 UPSC 2027 Command Center</h1>
+
+<p>
+Track every hour, MCQ, answer and test.
+Consistency beats intensity.
+</p>
+
+<a href="entry.html" class="button">
+➕ Daily Entry
+</a>
+
+<a href="analytics.html" class="button">
+📊 Analytics
+</a>
+
+</div>
+
+<div class="grid">
+
+<div class="card">
+
+<div class="cardTitle">
+⏱ Total Study Hours
+</div>
+
+<div class="number" id="totalHours">
+0
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="cardTitle">
+📝 MCQs Solved
+</div>
+
+<div class="number" id="totalMcqs">
+0
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="cardTitle">
+📚 GS Answers
+</div>
+
+<div class="number" id="totalGsAnswers">
+0
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="cardTitle">
+🎓 Optional Answers
+</div>
+
+<div class="number" id="totalOptionalAnswers">
+0
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="cardTitle">
+✍ Total Answers Written
+</div>
+
+<div class="number" id="totalAnswers">
+0
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="cardTitle">
+🧪 Tests Attempted
+</div>
+
+<div class="number" id="totalTests">
+0
+</div>
+
+</div>
+
+</div>
+
+<div class="footerCard">
+
+<h2>
+🔥 UPSC Mission 2027
+</h2>
+
+<div class="quote">
+"Every MCQ solved today reduces uncertainty on exam day."
+</div>
+
+</div>
+
+<script>
+
+let entries =
+JSON.parse(
+localStorage.getItem("upscEntries")
+) || [];
+
+let totalHours=0;
+let totalMcqs=0;
+let totalGsAnswers=0;
+let totalOptionalAnswers=0;
+let totalTests=0;
+
+entries.forEach(entry=>{
+
+    totalHours +=
+    (entry.optionalHours || 0)+
+    (entry.mainsHours || 0)+
+    (entry.gsHours || 0)+
+    (entry.caHours || 0)+
+    (entry.writingHours || 0);
+
+    totalMcqs +=
+    (entry.mcqs || 0);
+
+    totalGsAnswers +=
+    (entry.gsAnswers || 0);
+
+    totalOptionalAnswers +=
+    (entry.optionalAnswers || 0);
+
+    if(entry.testAttempted==="Yes"){
+        totalTests++;
+    }
+
+});
+
+document.getElementById("totalHours").innerHTML =
+totalHours.toFixed(1);
+
+document.getElementById("totalMcqs").innerHTML =
+totalMcqs;
+
+document.getElementById("totalGsAnswers").innerHTML =
+totalGsAnswers;
+
+document.getElementById("totalOptionalAnswers").innerHTML =
+totalOptionalAnswers;
+
+document.getElementById("totalAnswers").innerHTML =
+totalGsAnswers + totalOptionalAnswers;
+
+document.getElementById("totalTests").innerHTML =
+totalTests;
+
+</script>
+
+</body>
+
+</html>
