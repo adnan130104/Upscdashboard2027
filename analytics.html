@@ -126,10 +126,18 @@ Loading...
 
 <script>
 
-let entries =
-JSON.parse(
-localStorage.getItem("upscEntries")
-) || [];
+let entries = [];
+
+const snapshot =
+await getDocs(
+collection(db,"upscEntries")
+);
+
+snapshot.forEach((doc)=>{
+
+entries.push(doc.data());
+
+});
 
 entries.sort(
 (a,b)=>
@@ -406,7 +414,30 @@ document.getElementById("monthlyChart"),
 }
 );
 
-</script>
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+getDocs
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyDZ3NR4uIX68j7sUlYJXrgnPG8YqAds8qQ",
+authDomain: "upscdashboard2027.firebaseapp.com",
+projectId: "upscdashboard2027",
+storageBucket: "upscdashboard2027.firebasestorage.app",
+messagingSenderId: "339505380172",
+appId: "1:339505380172:web:2ece54c068448582846de9",
+measurementId: "G-6Y2GHER152"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 </body>
 
