@@ -14,145 +14,88 @@
 }
 
 body{
-
     background:#0f172a;
-
     color:white;
-
     font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-
     padding:20px;
-
 }
 
 .header{
-
     background:#111827;
-
     border-radius:20px;
-
     padding:25px;
-
     margin-bottom:25px;
-
     box-shadow:0 10px 30px rgba(0,0,0,.25);
-
 }
 
 .header h1{
-
     font-size:34px;
-
     margin-bottom:8px;
-
 }
 
 .header p{
-
     color:#94a3b8;
-
     margin-bottom:20px;
-
 }
 
 .button{
-
     display:inline-block;
-
     background:#22c55e;
-
     color:white;
-
     text-decoration:none;
-
     padding:12px 18px;
-
     border-radius:12px;
-
     margin-right:10px;
-
     font-weight:bold;
-
 }
 
 .button:hover{
-
     opacity:.9;
-
 }
 
 .grid{
-
     display:grid;
-
     grid-template-columns:
     repeat(auto-fit,minmax(220px,1fr));
-
     gap:18px;
-
 }
 
 .card{
-
     background:#1e293b;
-
     border-radius:18px;
-
     padding:20px;
-
     box-shadow:
     0 8px 25px rgba(0,0,0,.25);
-
 }
 
 .cardTitle{
-
     color:#94a3b8;
-
     font-size:14px;
-
     margin-bottom:12px;
-
 }
 
 .number{
-
     font-size:42px;
-
     font-weight:bold;
-
     color:#4ade80;
-
 }
 
 .footerCard{
-
     margin-top:25px;
-
     background:#111827;
-
     border-radius:20px;
-
     padding:25px;
-
     text-align:center;
-
 }
 
 .footerCard h2{
-
     color:#4ade80;
-
     margin-bottom:10px;
-
 }
 
 .quote{
-
     color:#cbd5e1;
-
     font-size:18px;
-
 }
 
 </style>
@@ -183,75 +126,33 @@ Consistency beats intensity.
 <div class="grid">
 
 <div class="card">
-
-<div class="cardTitle">
-⏱ Total Study Hours
-</div>
-
-<div class="number" id="totalHours">
-0
-</div>
-
+<div class="cardTitle">⏱ Total Study Hours</div>
+<div class="number" id="totalHours">0</div>
 </div>
 
 <div class="card">
-
-<div class="cardTitle">
-📝 MCQs Solved
-</div>
-
-<div class="number" id="totalMcqs">
-0
-</div>
-
+<div class="cardTitle">📝 MCQs Solved</div>
+<div class="number" id="totalMcqs">0</div>
 </div>
 
 <div class="card">
-
-<div class="cardTitle">
-📚 GS Answers
-</div>
-
-<div class="number" id="totalGsAnswers">
-0
-</div>
-
+<div class="cardTitle">📚 GS Answers</div>
+<div class="number" id="totalGsAnswers">0</div>
 </div>
 
 <div class="card">
-
-<div class="cardTitle">
-🎓 Optional Answers
-</div>
-
-<div class="number" id="totalOptionalAnswers">
-0
-</div>
-
+<div class="cardTitle">🎓 Optional Answers</div>
+<div class="number" id="totalOptionalAnswers">0</div>
 </div>
 
 <div class="card">
-
-<div class="cardTitle">
-✍ Total Answers Written
-</div>
-
-<div class="number" id="totalAnswers">
-0
-</div>
-
+<div class="cardTitle">✍ Total Answers Written</div>
+<div class="number" id="totalAnswers">0</div>
 </div>
 
 <div class="card">
-
-<div class="cardTitle">
-🧪 Tests Attempted
-</div>
-
-<div class="number" id="totalTests">
-0
-</div>
-
+<div class="cardTitle">🧪 Tests Attempted</div>
+<div class="number" id="totalTests">0</div>
 </div>
 
 </div>
@@ -268,12 +169,35 @@ Consistency beats intensity.
 
 </div>
 
-<script>
+<script type="module">
 
-let entries =
-JSON.parse(
-localStorage.getItem("upscEntries")
-) || [];
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getFirestore,
+collection,
+getDocs
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyDZ3NR4uIX68j7sUlYJXrgnPG8YqAds8qQ",
+authDomain: "upscdashboard2027.firebaseapp.com",
+projectId: "upscdashboard2027",
+storageBucket: "upscdashboard2027.firebasestorage.app",
+messagingSenderId: "339505380172",
+appId: "1:339505380172:web:2ece54c068448582846de9",
+measurementId: "G-6Y2GHER152"
+};
+
+const app =
+initializeApp(firebaseConfig);
+
+const db =
+getFirestore(app);
+
+async function loadDashboard(){
 
 let totalHours=0;
 let totalMcqs=0;
@@ -281,27 +205,34 @@ let totalGsAnswers=0;
 let totalOptionalAnswers=0;
 let totalTests=0;
 
-entries.forEach(entry=>{
+const snapshot =
+await getDocs(
+collection(db,"upscEntries")
+);
 
-    totalHours +=
-    (entry.optionalHours || 0)+
-    (entry.mainsHours || 0)+
-    (entry.gsHours || 0)+
-    (entry.caHours || 0)+
-    (entry.writingHours || 0);
+snapshot.forEach((doc)=>{
 
-    totalMcqs +=
-    (entry.mcqs || 0);
+const entry = doc.data();
 
-    totalGsAnswers +=
-    (entry.gsAnswers || 0);
+totalHours +=
+(entry.optionalHours || 0)+
+(entry.mainsHours || 0)+
+(entry.gsHours || 0)+
+(entry.caHours || 0)+
+(entry.writingHours || 0);
 
-    totalOptionalAnswers +=
-    (entry.optionalAnswers || 0);
+totalMcqs +=
+(entry.mcqs || 0);
 
-    if(entry.testAttempted==="Yes"){
-        totalTests++;
-    }
+totalGsAnswers +=
+(entry.gsAnswers || 0);
+
+totalOptionalAnswers +=
+(entry.optionalAnswers || 0);
+
+if(entry.testAttempted==="Yes"){
+totalTests++;
+}
 
 });
 
@@ -323,8 +254,11 @@ totalGsAnswers + totalOptionalAnswers;
 document.getElementById("totalTests").innerHTML =
 totalTests;
 
+}
+
+loadDashboard();
+
 </script>
 
 </body>
-
 </html>
