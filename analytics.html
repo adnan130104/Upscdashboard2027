@@ -124,130 +124,49 @@ Loading...
 <a href="index.html">⬅ Back to Dashboard</a>
 </div>
 
-<script>
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDZ3NR4uIX68j7sUlYJXrgnPG8YqAds8qQ",
+  authDomain: "upscdashboard2027.firebaseapp.com",
+  projectId: "upscdashboard2027",
+  storageBucket: "upscdashboard2027.firebasestorage.app",
+  messagingSenderId: "339505380172",
+  appId: "1:339505380172:web:2ece54c068448582846de9",
+  measurementId: "G-6Y2GHER152"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 let entries = [];
 
-const snapshot =
-await getDocs(
-collection(db,"upscEntries")
-);
+const snapshot = await getDocs(collection(db,"upscEntries"));
 
-snapshot.forEach((doc)=>{
-
-entries.push(doc.data());
-
+snapshot.forEach(doc=>{
+  entries.push(doc.data());
 });
 
-entries.sort(
-(a,b)=>
-new Date(a.date)-new Date(b.date)
-);
+entries.sort((a,b)=>new Date(a.date)-new Date(b.date));
 
-let currentStreak=0;
-let longestStreak=0;
+let currentStreak = entries.filter(e => e.dayType==="Study Day").length;
 
-entries.forEach(entry=>{
-
-    if(entry.dayType==="Study Day"){
-
-        currentStreak++;
-
-        if(currentStreak>longestStreak){
-            longestStreak=currentStreak;
-        }
-
-    }
-
-});
-
-document.getElementById("currentStreak").innerHTML =
-currentStreak;
-
-document.getElementById("longestStreak").innerHTML =
-longestStreak;
-
-// Days Won
+document.getElementById("currentStreak").innerHTML = currentStreak;
+document.getElementById("longestStreak").innerHTML = currentStreak;
 
 let daysWon=0;
-let currentWinStreak=0;
-
-entries.forEach(entry=>{
-
-    if(
-        (entry.optionalHours||0)>0 &&
-        (entry.mainsHours||0)>0 &&
-        (entry.gsHours||0)>0 &&
-        (entry.caHours||0)>0 &&
-        (entry.writingHours||0)>0
-    ){
-
-        daysWon++;
-        currentWinStreak++;
-
-    }
-
-});
-
-document.getElementById("daysWon").innerHTML =
-daysWon;
-
-document.getElementById("currentWinStreak").innerHTML =
-currentWinStreak;
-
-// Weekly Stats
-
 let totalHours=0;
 let totalMcqs=0;
 let totalGs=0;
 let totalOptional=0;
 let totalTests=0;
 
-entries.forEach(entry=>{
-
-    totalHours +=
-    (entry.optionalHours||0)+
-    (entry.mainsHours||0)+
-    (entry.gsHours||0)+
-    (entry.caHours||0)+
-    (entry.writingHours||0);
-
-    totalMcqs +=
-    (entry.mcqs||0);
-
-    totalGs +=
-    (entry.gsAnswers||0);
-
-    totalOptional +=
-    (entry.optionalAnswers||0);
-
-    if(entry.testAttempted==="Yes"){
-        totalTests++;
-    }
-
-});
-
-document.getElementById("weeklyStats").innerHTML =
-
-"Hours: "+totalHours.toFixed(1)+
-"<br><br>MCQs: "+totalMcqs+
-"<br><br>GS Answers: "+totalGs+
-"<br><br>Optional Answers: "+totalOptional+
-"<br><br>Tests: "+totalTests;
-
-// Monthly Stats
-
-document.getElementById("monthlyStats").innerHTML =
-
-"Hours: "+totalHours.toFixed(1)+
-"<br><br>MCQs: "+totalMcqs+
-"<br><br>GS Answers: "+totalGs+
-"<br><br>Optional Answers: "+totalOptional+
-"<br><br>Total Answers: "+
-(totalGs+totalOptional)+
-"<br><br>Tests: "+totalTests;
-
-// Records
+let gsSubjects={};
+let mainsSubjects={};
+let optionalSubjects={};
 
 let bestDayHours=0;
 let highestMcqDay=0;
@@ -255,190 +174,124 @@ let highestAnswerDay=0;
 
 entries.forEach(entry=>{
 
-    let dayHours=
+  if(
+    (entry.optionalHours||0)>0 &&
+    (entry.mainsHours||0)>0 &&
+    (entry.gsHours||0)>0 &&
+    (entry.caHours||0)>0 &&
+    (entry.writingHours||0)>0
+  ){
+    daysWon++;
+  }
 
-    (entry.optionalHours||0)+
-    (entry.mainsHours||0)+
-    (entry.gsHours||0)+
-    (entry.caHours||0)+
-    (entry.writingHours||0);
+  totalHours +=
+  (entry.optionalHours||0)+
+  (entry.mainsHours||0)+
+  (entry.gsHours||0)+
+  (entry.caHours||0)+
+  (entry.writingHours||0);
 
-    let dayAnswers=
+  totalMcqs += (entry.mcqs||0);
+  totalGs += (entry.gsAnswers||0);
+  totalOptional += (entry.optionalAnswers||0);
 
-    (entry.gsAnswers||0)+
-    (entry.optionalAnswers||0);
+  if(entry.testAttempted==="Yes"){
+    totalTests++;
+  }
 
-    if(dayHours>bestDayHours){
-        bestDayHours=dayHours;
-    }
+  let dayHours =
+  (entry.optionalHours||0)+
+  (entry.mainsHours||0)+
+  (entry.gsHours||0)+
+  (entry.caHours||0)+
+  (entry.writingHours||0);
 
-    if((entry.mcqs||0)>highestMcqDay){
-        highestMcqDay=entry.mcqs;
-    }
+  let dayAnswers =
+  (entry.gsAnswers||0)+
+  (entry.optionalAnswers||0);
 
-    if(dayAnswers>highestAnswerDay){
-        highestAnswerDay=dayAnswers;
-    }
+  if(dayHours>bestDayHours) bestDayHours=dayHours;
+  if((entry.mcqs||0)>highestMcqDay) highestMcqDay=entry.mcqs;
+  if(dayAnswers>highestAnswerDay) highestAnswerDay=dayAnswers;
 
+  if(entry.gsSubject){
+    gsSubjects[entry.gsSubject]=(gsSubjects[entry.gsSubject]||0)+(entry.gsHours||0);
+  }
+
+  if(entry.mainsSubject){
+    mainsSubjects[entry.mainsSubject]=(mainsSubjects[entry.mainsSubject]||0)+(entry.mainsHours||0);
+  }
+
+  if(entry.optionalSubject){
+    optionalSubjects[entry.optionalSubject]=(optionalSubjects[entry.optionalSubject]||0)+(entry.optionalHours||0);
+  }
 });
 
-// Subject Wise Hours
+document.getElementById("daysWon").innerHTML = daysWon;
+document.getElementById("currentWinStreak").innerHTML = daysWon;
 
-let gsSubjects = {};
-let mainsSubjects = {};
-let optionalSubjects = {};
+document.getElementById("weeklyStats").innerHTML =
+"Hours: "+totalHours.toFixed(1)+
+"<br><br>MCQs: "+totalMcqs+
+"<br><br>GS Answers: "+totalGs+
+"<br><br>Optional Answers: "+totalOptional+
+"<br><br>Tests: "+totalTests;
 
-entries.forEach(entry=>{
+document.getElementById("monthlyStats").innerHTML =
+"Hours: "+totalHours.toFixed(1)+
+"<br><br>MCQs: "+totalMcqs+
+"<br><br>GS Answers: "+totalGs+
+"<br><br>Optional Answers: "+totalOptional+
+"<br><br>Total Answers: "+(totalGs+totalOptional)+
+"<br><br>Tests: "+totalTests;
 
-    if(entry.gsSubject){
+let subjectHtml="<b>GS Subjects</b><br><br>";
 
-        gsSubjects[entry.gsSubject] =
-        (gsSubjects[entry.gsSubject] || 0)
-        +
-        (entry.gsHours || 0);
-
-    }
-
-    if(entry.mainsSubject){
-
-        mainsSubjects[entry.mainsSubject] =
-        (mainsSubjects[entry.mainsSubject] || 0)
-        +
-        (entry.mainsHours || 0);
-
-    }
-
-    if(entry.optionalSubject){
-
-        optionalSubjects[entry.optionalSubject] =
-        (optionalSubjects[entry.optionalSubject] || 0)
-        +
-        (entry.optionalHours || 0);
-
-    }
-
-});
-
-let subjectHtml =
-
-"<b>GS Subjects</b><br><br>";
-
-for(let subject in gsSubjects){
-
-    subjectHtml +=
-    subject +
-    " : " +
-    gsSubjects[subject].toFixed(1) +
-    " hrs<br>";
-
+for(let s in gsSubjects){
+  subjectHtml += s+" : "+gsSubjects[s].toFixed(1)+" hrs<br>";
 }
 
-subjectHtml +=
-"<br><b>Mains Subjects</b><br><br>";
+subjectHtml += "<br><b>Mains Subjects</b><br><br>";
 
-for(let subject in mainsSubjects){
-
-    subjectHtml +=
-    subject +
-    " : " +
-    mainsSubjects[subject].toFixed(1) +
-    " hrs<br>";
-
+for(let s in mainsSubjects){
+  subjectHtml += s+" : "+mainsSubjects[s].toFixed(1)+" hrs<br>";
 }
 
-subjectHtml +=
-"<br><b>Optional</b><br><br>";
+subjectHtml += "<br><b>Optional</b><br><br>";
 
-for(let subject in optionalSubjects){
-
-    subjectHtml +=
-    subject +
-    " : " +
-    optionalSubjects[subject].toFixed(1) +
-    " hrs<br>";
-
+for(let s in optionalSubjects){
+  subjectHtml += s+" : "+optionalSubjects[s].toFixed(1)+" hrs<br>";
 }
 
-document.getElementById("subjectStats").innerHTML =
-subjectHtml;
+document.getElementById("subjectStats").innerHTML = subjectHtml;
 
 document.getElementById("records").innerHTML =
+"Best Study Day: "+bestDayHours.toFixed(1)+" Hours"+
+"<br><br>Highest MCQ Day: "+highestMcqDay+
+"<br><br>Highest Answer Day: "+highestAnswerDay;
 
-"Best Study Day: "+
-bestDayHours.toFixed(1)+
-" Hours"
+new Chart(document.getElementById("weeklyChart"),{
+  type:"line",
+  data:{
+    labels:["Week 1","Week 2","Week 3","Week 4"],
+    datasets:[{
+      label:"Study Hours",
+      data:[5,10,15,20]
+    }]
+  }
+});
 
-+
+new Chart(document.getElementById("monthlyChart"),{
+  type:"bar",
+  data:{
+    labels:["Jan","Feb","Mar","Apr"],
+    datasets:[{
+      label:"Study Hours",
+      data:[20,35,50,70]
+    }]
+  }
+});
 
-"<br><br>Highest MCQ Day: "+
-highestMcqDay
-
-+
-
-"<br><br>Highest Answer Day: "+
-highestAnswerDay;
-
-// Weekly Progress Chart
-
-new Chart(
-document.getElementById("weeklyChart"),
-{
-    type:"line",
-
-    data:{
-        labels:["Week 1","Week 2","Week 3","Week 4"],
-
-        datasets:[{
-            label:"Study Hours",
-            data:[5,10,15,20]
-        }]
-    }
-}
-);
-
-// Monthly Progress Chart
-
-new Chart(
-document.getElementById("monthlyChart"),
-{
-    type:"bar",
-
-    data:{
-        labels:["Jan","Feb","Mar","Apr"],
-
-        datasets:[{
-            label:"Study Hours",
-            data:[20,35,50,70]
-        }]
-    }
-}
-);
-
-<script type="module">
-
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-import {
-getFirestore,
-collection,
-getDocs
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = {
-apiKey: "AIzaSyDZ3NR4uIX68j7sUlYJXrgnPG8YqAds8qQ",
-authDomain: "upscdashboard2027.firebaseapp.com",
-projectId: "upscdashboard2027",
-storageBucket: "upscdashboard2027.firebasestorage.app",
-messagingSenderId: "339505380172",
-appId: "1:339505380172:web:2ece54c068448582846de9",
-measurementId: "G-6Y2GHER152"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
+</script>
 </body>
-
 </html>
